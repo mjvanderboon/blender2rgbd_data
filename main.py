@@ -51,6 +51,7 @@ def render_scene_handler(*args, **kwargs):
     # Randomize head pose and color
     randomize_head_pose(head, hmd)
     bpy.data.materials["Face"].node_tree.nodes["Mix"].inputs["Fac"].default_value = np.random.uniform(0.2, 1)
+    bpy.data.materials["hmd"].node_tree.nodes["Mix"].inputs["Fac"].default_value = np.random.uniform(0., 0.1)
 
     # Randomize background
     bg = np.random.choice(background_images)
@@ -76,7 +77,7 @@ def save_semseg_handler(*args, **kwargs):
     dst_file = os.path.join(OUTPUT_DIR, 'gt', f'{idx - 1}.png')
     shutil.copy(GT_IMAGE, dst_file)
 
-    print(f'########## SAVED GT FILE: {idx - 1} ##############')
+    print(f'########## SAVED GROUND TRUTH FILE: {idx - 1} ##############')
 
 bpy.app.handlers.render_complete.append(render_scene_handler)
 bpy.app.handlers.render_post.append(save_semseg_handler)
