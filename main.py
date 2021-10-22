@@ -5,71 +5,70 @@ import numpy as np
 import mathutils
 import math
 
-def point_at(obj, target, roll=0):
-    """
-    Rotate obj to look at target
-    :arg obj: the object to be rotated. Usually the camera
-    :arg target: the location (3-tuple or Vector) to be looked at
-    :arg roll: The angle of rotation about the axis from obj to target in radians.
-    Based on: https://blender.stackexchange.com/a/5220/12947 (ideasman42)    """
-    if not isinstance(target, mathutils.Vector):
-        target = mathutils.Vector(target)
-    loc = obj.location
-    # direction points from the object to the target
-    direction = target - loc
 
-    quat = direction.to_track_quat('-Z', 'Y')
-
-    # /usr/share/blender/scripts/addons/add_advanced_objects_menu/arrange_on_curve.py
-    quat = quat.to_matrix().to_4x4()
-    rollMatrix = mathutils.Matrix.Rotation(roll, 4, 'Z')
-
-    # remember the current location, since assigning to obj.matrix_world changes it
-    loc = loc.to_tuple()
-    # obj.matrix_world = quat * rollMatrix
-    # in blender 2.8 and above @ is used to multiply matrices
-    # using * still works but results in unexpected behaviour!
-    obj.matrix_world = quat @ rollMatrix
-    obj.location = loc
-
-
-def sample_sherical_uniform_angles(n, min_pitch=30, radius=1., radius_range=0):
-    yaw = np.random.uniform(-math.pi, math.pi, n)
-    pitch = np.random.uniform(math.radians(min_pitch), math.radians(90), n)
-    radius = np.random.uniform(-radius_range, radius_range, n) + radius
-
-    x = np.sin(yaw) * np.cos(pitch)
-    z = np.sin(pitch)
-    y = np.cos(yaw) * np.cos(pitch)
-
-    x = np.expand_dims(x, axis=1)
-    y = np.expand_dims(y, axis=1)
-    z = np.expand_dims(z, axis=1)
-
-    return np.concatenate((x, y, z), axis=1) * np.expand_dims(radius, axis=1)
-
+# Make python able to import from scripts in current working directory
+dir = os.getcwd()
+if not dir in sys.path:
+    sys.path.append(dir)
+from utils import *
 
 idx = 0
+GT_render_pass = False
+
+bpy.context.scene.render.use_compositing = True
+bpy.context.scene.use_nodes = True
+
+# Output directory
+OUTPUT_DIR = 'C:/dev/mesh2rgbd_dataset_generation/output'
+subfolder = {
+    True: 'rgb',
+    False: 'gt'
+}
+
+# Scene objects
 cam = bpy.data.objects['Camera']
 obj = bpy.data.objects['FaceTS_OBJ']
+hmd = bpy.data.objects['HMD']
+
+# Scene nodes
+rl_node = bpy.data.scenes['Scene'].node_tree.nodes["Render Layers"]
+composite_node = bpy.data.scenes['Scene'].node_tree.nodes["Composite"]
+semseg_node = bpy.data.scenes['Scene'].node_tree.nodes["Math"]
 
 def my_handler(*args, **kwargs):
-    global idx, cam, obj
-    idx += 1
-
-    xyz = sample_sherical_uniform_angles(2, min_pitch=30, radius=10.)[0]
-    cam.location = xyz
-    point_at(cam, obj.location)
-    filepath = f"c:/Users/boonmjvd/Desktop/{idx}.png"
+    global idx, cam, obj, GT_render_pass
 
     scene = bpy.context.scene
-    scene.render.image_settings.file_format = 'PNG'
-    scene.render.filepath = filepath
+    render = scene.render
+    node_tree = scene.node_tree
+
+    if GT_render_pass:
+        print('GT render pass')
+        GT_render_pass = False
+        render.image_settings.color_mode = "BW"
+        render.image_settings.save_as_render = False
+        node_tree.links.new(semseg_node.outputs["Value"], composite_node.inputs["Image"])
+    else:
+        print('RGB render pass')
+        idx += 1
+        GT_render_pass = True
+        render.image_settings.color_mode = "RGB"
+        render.image_settings.save_as_render = True
+        node_tree.links.new(rl_node.outputs["Image"], composite_node.inputs["Image"])
+
+        x, y, z = np.random.uniform(-math.pi / 8, math.pi / 8, 3)
+        rotate_obj_euler(obj, x, y, z)
+        rotate_obj_euler(hmd, x, y, z)
+
+    # Render image
+    render.image_settings.file_format = 'PNG'
+    render.filepath = os.path.join(OUTPUT_DIR, subfolder[GT_render_pass], f'{idx}.png')
     bpy.ops.render.render(write_still=True)
 
     print('#####################################################################################')
     print(f'########## RENDERED FILE: {idx} ##############')
-    bpy.ops.render.render()
+    print('#####################################################################################')
+
 
 bpy.app.handlers.render_complete.append(my_handler)
 my_handler()
