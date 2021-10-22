@@ -5,6 +5,7 @@
 
 from collections import namedtuple
 
+
 Label = namedtuple('Label', [
     'name',    # The identifier of this label, e.g. 'car', 'person', ... .
     'id',       # An integer ID that is associated with this label.
