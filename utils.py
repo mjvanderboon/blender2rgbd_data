@@ -5,11 +5,20 @@ import numpy as np
 import mathutils
 import math
 
+def random_color(min=0., max=255.):
+    return np.random.uniform(min, max, 3).tolist() + [255.]
+
+def randomize_head_pose(head, hmd):
+    x, y, z = np.random.uniform(-math.pi / 4, math.pi / 4, 3)
+    rotate_obj_euler(head, x, y, z)
+    rotate_obj_euler(hmd, x, y, z)
+
 
 def rotate_obj_euler(obj, x, y, z):
     # rotate around global Z-axis
     obj.rotation_mode = 'XYZ'
     obj.rotation_euler = (np.pi/2 + x, y, z)
+
 
 def point_at(obj, target, roll=0):
     """
@@ -39,7 +48,7 @@ def point_at(obj, target, roll=0):
     obj.location = loc
 
 
-def sample_sherical_uniform_angles(n, min_pitch=-90, radius=1., radius_range=0):
+def sample_spherical_uniform_angles(n, min_pitch=-90, radius=1., radius_range=0):
     yaw = np.random.uniform(-math.pi, math.pi, n)
     pitch = np.random.uniform(math.radians(min_pitch), math.radians(90), n)
     radius = np.random.uniform(-radius_range, radius_range, n) + radius

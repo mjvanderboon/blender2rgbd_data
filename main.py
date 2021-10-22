@@ -16,15 +16,23 @@ idx = 0
 
 bpy.context.scene.render.use_compositing = True
 bpy.context.scene.use_nodes = True
+scene = bpy.context.scene
+render = scene.render
 
 # Output directory
 OUTPUT_DIR = os.path.join(os.getcwd(), 'output')
-GT_IMAGE = 'output/Image0076.png'
+GT_IMAGE = 'output/Image0000.png'
+BACKGROUND_DIR = 'C:\data\indoorCVPR_09\Images\meeting_room'
 
 # Scene objects
 cam = bpy.data.objects['Camera']
-obj = bpy.data.objects['FaceTS_OBJ']
+head = bpy.data.objects['FaceTS_OBJ']
 hmd = bpy.data.objects['HMD']
+scene_lights = [obj for obj in scene.objects if obj.type == 'LIGHT']
+print(scene_lights)
+# Dataset of background images
+background_images = [os.path.join(BACKGROUND_DIR, file) for file in os.listdir(BACKGROUND_DIR)]
+
 
 def render_scene_handler(*args, **kwargs):
     """
@@ -35,14 +43,23 @@ def render_scene_handler(*args, **kwargs):
     :param kwargs:
     :return:
     """
-    global idx, cam, obj
+    global idx, cam
 
     scene = bpy.context.scene
     render = scene.render
 
-    x, y, z = np.random.uniform(-math.pi / 8, math.pi / 8, 3)
-    rotate_obj_euler(obj, x, y, z)
-    rotate_obj_euler(hmd, x, y, z)
+    # Randomize head pose and color
+    randomize_head_pose(head, hmd)
+    bpy.data.materials["Face"].node_tree.nodes["Mix"].inputs["Fac"].default_value = np.random.uniform(0.2, 1)
+
+    # Randomize background
+    bg = np.random.choice(background_images)
+    bpy.data.images["08.jpg"].filepath = bg
+
+    # Randomize lighting
+    for light in scene_lights:
+        light.data.node_tree.nodes['Emission'].inputs['Color'].default_value = random_color(min=100., max=200.)
+        light.data.node_tree.nodes['Emission'].inputs['Strength'].default_value = np.random.uniform(0., 0.1)
 
     # Render image
     print(f'########## RENDERING FILE: {idx} ##############')
