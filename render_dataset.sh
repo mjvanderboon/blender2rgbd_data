@@ -1,1 +1,0 @@
-C:\Users\boonmjvd\AppData\Local\Microsoft\AppV\Client\Integration\6BB3246B-25D3-457C-BC2F-A7C6E871088F\Root\blender.exe hmd_male_composite.blend --background --python main.py

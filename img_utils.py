@@ -25,4 +25,4 @@ if __name__ == "__main__":
 
         cv2.imshow('rgb', img_rgb)
         cv2.imshow('gt', img_gt_rgb)
-        cv2.waitKey(10)
+        cv2.waitKey(500)
