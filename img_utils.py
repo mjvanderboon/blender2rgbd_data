@@ -7,8 +7,8 @@ from config import *
 idx = 0
 
 def get_rgb_and_semseg(idx):
-    img_gt = cv2.imread(f'output/gt/{idx}.png', 0)
-    img_rgb = cv2.imread(f'output/rgb/{idx}.png')
+    img_rgb = cv2.imread(DATA_DIR + f'images\\{idx}.png')
+    img_gt = cv2.imread(DATA_DIR + f'labels\\{idx}.png', 0)
 
     img_gt_rgb = np.zeros((img_gt.shape[0], img_gt.shape[1], 3), np.uint8)
 
@@ -20,7 +20,9 @@ def get_rgb_and_semseg(idx):
 
 
 if __name__ == "__main__":
-    for i in range(20):
+    DATA_DIR = 'C:\\data\\HmdSegmentation\\training\\'
+
+    for i in range(6):
         img_rgb, img_gt_rgb = get_rgb_and_semseg(i)
 
         cv2.imshow('rgb', img_rgb)

@@ -9,7 +9,7 @@ gcloud beta compute ssh --zone "europe-west4-b" "blender-render"  --project "pri
 gcloud compute scp --recurse .\blender2rgb_data\ boonmjvd@blender-render:blender2rgb_data/
 
 # scp from remote to local
-gcloud compute scp --recurse boonmjvd@blender-render:blender2rgb_data/output ./blender2rgb_data/
+gcloud compute scp --recurse boonmjvd@blender-render:blender2rgb_data/HmdSegmentation ../
 
 # Download and install Blender
  wget 'https://download.blender.org/release/Blender2.91/blender-2.91.2-linux64.tar.xz'
