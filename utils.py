@@ -5,8 +5,22 @@ import numpy as np
 import mathutils
 import math
 
+
+def get_split_dir(idx):
+    """" Cycle between training, validation and testing subfolders in a 60/10/30 ratio """
+    if 0 <= (idx % 10) < 6:
+        return 'training'
+    elif 6 <= (idx % 10) < 9:
+        return 'testing'
+    elif (idx % 10) == 9:
+        return 'validation'
+    else:
+        return '-1'
+
+
 def random_color(min=0., max=255.):
     return np.random.uniform(min, max, 3).tolist() + [255.]
+
 
 def randomize_head_pose(head, hmd):
     x, y, z = np.random.uniform(-math.pi / 4, math.pi / 4, 3)

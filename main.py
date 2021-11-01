@@ -19,9 +19,6 @@ bpy.context.preferences.addons["cycles"].preferences.get_devices()
 bpy.context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
 bpy.context.scene.cycles.device = "GPU"
 
-# get_devices() to let Blender detects GPU device
-
-
 print('Cycles compute device data (should be CUDA)')
 print(bpy.context.preferences.addons["cycles"].preferences.compute_device_type)
 
@@ -38,9 +35,14 @@ scene.cycles.device = "GPU"
 render = scene.render
 
 # Output directory
-OUTPUT_DIR = os.path.join(os.getcwd(), 'output')
+OUTPUT_DIR = os.path.join(os.getcwd(), 'HmdSegmentation')
+if os.path.exists(OUTPUT_DIR) and os.path.isdir(OUTPUT_DIR):
+    shutil.rmtree(OUTPUT_DIR)
+os.mkdir(OUTPUT_DIR)
+SAVE_DIRECTORY = ''
+
 GT_IMAGE = os.path.join(os.getcwd(), 'output', 'Image0000.png')
-BACKGROUND_DIR = os.path.join(os.pardir, 'indoorCVPR_09', 'Images', 'meeting_room')
+BACKGROUND_DIR = os.path.join(os.pardir, 'indoorCVPR_09', 'Images', 'meeting_room') # TODO: add arg/yml for this
 #GT_IMAGE = 'output/Image0000.png'
 #BACKGROUND_DIR = 'C:\data\indoorCVPR_09\Images\meeting_room'
 
@@ -80,7 +82,7 @@ def randomize_scene_handler(*args, **kwargs):
 
 
 def save_semseg_handler(*args, **kwargs):
-    dst_file = os.path.join(OUTPUT_DIR, 'gt', f'{idx}.png')
+    dst_file = os.path.join(SAVE_DIRECTORY, 'labels', f'{idx}.png')
     shutil.copy(GT_IMAGE, dst_file)
     print(f'########## SAVED GROUND TRUTH FILE: {idx} ##############')
 
@@ -94,9 +96,12 @@ for idx in range(NR_OF_RENDERS):
     scene = bpy.context.scene
     render = scene.render
 
+    # Set dataset split
+    SAVE_DIRECTORY = os.path.join(OUTPUT_DIR, get_split_dir(idx))
+
     # Render image
     print(f'########## RENDERING FILE: {idx} ##############')
     render.image_settings.file_format = 'PNG'
-    render.filepath = os.path.join(OUTPUT_DIR, 'rgb', f'{idx}.png')
+    render.filepath = os.path.join(SAVE_DIRECTORY, 'images', f'{idx}.png')
     bpy.ops.render.render(write_still=True)
     idx += 1
