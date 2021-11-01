@@ -41,9 +41,9 @@ if os.path.exists(OUTPUT_DIR) and os.path.isdir(OUTPUT_DIR):
 os.mkdir(OUTPUT_DIR)
 SAVE_DIRECTORY = ''
 
-GT_IMAGE = os.path.join(os.getcwd(), 'output', 'Image0000.png')
+GT_IMAGE = os.path.join(os.getcwd(), 'HmdSegmentation', 'Image0000.png')
 BACKGROUND_DIR = os.path.join(os.pardir, 'indoorCVPR_09', 'Images', 'meeting_room') # TODO: add arg/yml for this
-#GT_IMAGE = 'output/Image0000.png'
+#GT_IMAGE = 'HmdSegmentation/Image0000.png'
 #BACKGROUND_DIR = 'C:\data\indoorCVPR_09\Images\meeting_room'
 
 # Scene objects
@@ -83,6 +83,7 @@ def randomize_scene_handler(*args, **kwargs):
 
 def save_semseg_handler(*args, **kwargs):
     dst_file = os.path.join(SAVE_DIRECTORY, 'labels', f'{idx}.png')
+    os.makedirs(os.path.dirname(dst_file), exist_ok=True)  # Create directory if it doesn't already exist
     shutil.copy(GT_IMAGE, dst_file)
     print(f'########## SAVED GROUND TRUTH FILE: {idx} ##############')
 
